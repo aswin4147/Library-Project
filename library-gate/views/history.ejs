@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visit History</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container wide">
+        <h1>Visit History</h1>
+
+<form action="/history" method="GET" class="filter-form">
+    <div class="form-group">
+        <label for="year">Year:</label>
+        <input type="number" name="year" placeholder="YYYY" value="<%= filters.year || '' %>">
+    </div>
+    <div class="form-group">
+        <label for="month">Month:</label>
+        <select name="month">
+            <option value="">All Months</option>
+            <% const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; %>
+            <% for(let i = 0; i < months.length; i++) { %>
+                <option value="<%= i + 1 %>" <%= (filters.month == i + 1) ? 'selected' : '' %>>
+                    <%= months[i] %>
+                </option>
+            <% } %>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="day">Day:</label>
+        <input type="number" name="day" placeholder="DD" value="<%= filters.day || '' %>">
+    </div>
+    <div class="form-group">
+        <button type="button" id="clear-filter-btn" class="btn-clear">Clear Filter</button>
+    </div>
+</form>
+<a href="/" class="nav-link">← Back to Punch-in Page</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Purpose</th>
+                    <th>Punch In Time</th>
+                    <th>Punch Out Time</th>
+                    <th>Time Spent (Minutes)</th> </tr>
+            </thead>
+            <tbody>
+    </tbody>
+        </table>
+    </div>
+    <script>
+        // Get references to our HTML elements
+        const filterForm = document.querySelector('.filter-form');
+        const visitsTableBody = document.querySelector('table tbody');
+
+        // This function will fetch new data and update the table
+        async function updateHistory() {
+            // Get current filter values
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams(formData);
+
+            try {
+                // Fetch data from our new API route
+                const response = await fetch(`/api/history?${params.toString()}`);
+                const visits = await response.json();
+
+                // Clear the current table content
+                visitsTableBody.innerHTML = '';
+
+                // If no visits, show a message
+                if (visits.length === 0) {
+                    visitsTableBody.innerHTML = '<tr><td colspan="5">No records found.</td></tr>';
+                    return;
+                }
+
+                // Loop through the new data and build the HTML for each row
+                visits.forEach(visit => {
+                    const punchOutTime = visit.punch_out_time ? new Date(visit.punch_out_time).toLocaleString('en-IN') : `<strong style="color: green;">Still Punched In</strong>`;
+                    const duration = visit.duration_minutes !== null ? visit.duration_minutes : '-';
+                    const punchInTime = new Date(visit.punch_in_time).toLocaleString('en-IN');
+
+                    const row = `
+                        <tr>
+                            <td>${visit.student_id}</td>
+                            <td>${visit.purpose}</td>
+                            <td>${punchInTime}</td>
+                            <td>${punchOutTime}</td>
+                            <td>${duration}</td>
+                        </tr>
+                    `;
+                    visitsTableBody.innerHTML += row;
+                });
+
+            } catch (error) {
+                console.error('Failed to fetch history:', error);
+                visitsTableBody.innerHTML = '<tr><td colspan="5">Failed to load data.</td></tr>';
+            }
+        }
+
+        // Add event listeners to the form inputs
+        // 'input' event fires every time the user types or changes a selection
+        filterForm.addEventListener('input', updateHistory);
+
+    // --- ADD THIS LINE ---
+    // Call the function once when the page first loads
+    // ... at the bottom of your <script> tag ...
+
+const clearFilterBtn = document.getElementById('clear-filter-btn');
+
+clearFilterBtn.addEventListener('click', () => {
+    // Reset the form fields to their default values
+    filterForm.reset();
+    
+    // Call updateHistory() to instantly refresh the table with all records
+    updateHistory();
+});
+    updateHistory();
+    </script>
+</body>
+</html>

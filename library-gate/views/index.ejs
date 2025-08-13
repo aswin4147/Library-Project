@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Gate</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <div class="container">
+        <!-- Display Flash Messages -->
+        <% if (messages.error) { %>
+            <div class="flash error"><%= messages.error %></div>
+        <% } %>
+        <% if (messages.success) { %>
+            <div class="flash success"><%= messages.success %></div>
+        <% } %>
+
+        <a href="/history" class="top-right-link">View History</a>
+        
+        <h1>Library Punch-in System</h1>
+
+        <form action="/student-status" method="POST">
+            <div class="form-group">
+                <label for="student_id">Enter Student ID:</label>
+                <input type="text" id="student_id" name="student_id" required autofocus>
+            </div>
+            <div class="form-group">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        const studentIdInput = document.getElementById('student_id');
+
+        // This function will be called whenever the input box loses focus
+        function refocusInput() {
+            // A tiny delay helps prevent conflicts with other browser events
+            setTimeout(() => {
+                studentIdInput.focus();
+            }, 10);
+        }
+
+        // Add an event listener that calls our function when focus is lost
+        studentIdInput.addEventListener('blur', refocusInput);
+    </script>
+</body>
+</html>

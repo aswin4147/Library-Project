@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Action</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <div class="container">
+        <h1>Student ID: <strong><%= student_id %></strong></h1>
+
+        <form action="/punch" method="POST">
+            <input type="hidden" name="student_id" value="<%= student_id %>">
+
+            <% if (isPunchedIn) { %>
+                <div class="form-group">
+                    <p>This student is currently punched in.</p>
+                    <button type="submit" name="action" value="punch_out" class="btn-punch-out">Punch Out</button>
+                </div>
+            <% } else { %>
+                <div class="form-group">
+                    <label>Select Purpose of Visit:</label>
+                    <button type="submit" name="purpose" value="Reading" class="btn-purpose">Reading</button>
+                    <button type="submit" name="purpose" value="Lending" class="btn-purpose">Lending</button>
+                    <button type="submit" name="purpose" value="Book Bank" class="btn-purpose">Book Bank</button>
+                </div>
+                <input type="hidden" name="action" value="punch_in">
+            <% } %>
+        </form>
+        <a href="/" class="nav-link">← Back to ID Entry</a>
+    </div>
+</body>
+</html>
