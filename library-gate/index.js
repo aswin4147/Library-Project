@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise'); // Using the promise-based version
 const session = require('express-session');
@@ -11,10 +12,10 @@ const port = 3100; // Backend API runs on port 3100
 // --- MySQL Connection Pool Setup ---
 // Using the credentials you provided.
 const dbPool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: 'pass123',
-    database: 'library_db',
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0

@@ -1,10 +1,14 @@
+require('dotenv').config();
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 // Update with your MySQL credentials
 const connection = mysql.createConnection({
-    host: 'localhost', user: 'root', password: 'pass123', database: 'library_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 connection.connect((err) => {

@@ -1,13 +1,14 @@
+require('dotenv').config();
 const xlsx = require('xlsx');
 const mysql = require('mysql2/promise');
 
 // --- Configuration ---
 const EXCEL_FILE_PATH = './students_data.xlsx'; // The name of your Excel file
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'pass123',
-    database: 'library_db'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 };
 
 async function importData() {
