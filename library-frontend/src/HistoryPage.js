@@ -3,29 +3,26 @@ import { Link } from 'react-router-dom';
 
 function HistoryPage() {
     const [visits, setVisits] = useState([]);
-    const [filters, setFilters] = useState({ year: '', month: '', day: '' });
-    const [error, setError] = useState(''); // Added state for error messages
+    const [filters, setFilters] = useState({ year: '', month: '', day: '', purpose: '' });
+    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchHistory = async () => {
             const params = new URLSearchParams(filters);
-            setError(''); // Clear previous errors
+            setError('');
 
             try {
                 const response = await fetch(`http://localhost:3100/api/history?${params.toString()}`, {
-                    credentials: 'include' // Important for sending session cookie
+                    credentials: 'include'
                 });
                 
                 const data = await response.json();
 
-                // --- THIS IS THE FIX ---
-                // Check if the received data is an array before setting the state
                 if (Array.isArray(data)) {
                     setVisits(data);
                 } else {
-                    // If it's not an array, it's an error object from our API
                     setError(data.error || 'An unknown error occurred.');
-                    setVisits([]); // Reset visits to an empty array
+                    setVisits([]);
                 }
             } catch (error) {
                 console.error('Failed to fetch history:', error);
@@ -34,7 +31,7 @@ function HistoryPage() {
         };
 
         fetchHistory();
-    }, [filters]); // Refetch whenever filters change
+    }, [filters]);
 
     const handleFilterChange = (e) => {
         setFilters({
@@ -52,6 +49,7 @@ function HistoryPage() {
             <h1>Visit History</h1>
             
             <form className="filter-form">
+                {/* Filter form inputs */}
                 <div className="form-group">
                     <label>Year:</label>
                     <input type="number" name="year" placeholder="YYYY" value={filters.year} onChange={handleFilterChange} />
@@ -78,6 +76,15 @@ function HistoryPage() {
                     <label>Day:</label>
                     <input type="number" name="day" placeholder="DD" value={filters.day} onChange={handleFilterChange} />
                 </div>
+                 <div className="form-group">
+                    <label>Purpose:</label>
+                    <select name="purpose" value={filters.purpose} onChange={handleFilterChange}>
+                        <option value="">All</option>
+                        <option value="Reading">Reading</option>
+                        <option value="Lending">Lending</option>
+                        <option value="Book Bank">Book Bank</option>
+                    </select>
+                </div>
                 <div className="form-group">
                     <button type="button" onClick={clearFilters} className="btn-clear">Clear Filter</button>
                 </div>
@@ -90,7 +97,9 @@ function HistoryPage() {
             <table>
                 <thead>
                     <tr>
-                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Register Number</th>
+                        <th>Admission Number</th>
                         <th>Purpose</th>
                         <th>Punch In Time</th>
                         <th>Punch Out Time</th>
@@ -98,9 +107,11 @@ function HistoryPage() {
                     </tr>
                 </thead>
                 <tbody>
-                    {visits.map(visit => (
-                        <tr key={visit.id}>
-                            <td>{visit.student_id}</td>
+                    {visits.map((visit, index) => (
+                        <tr key={index}>
+                            <td>{visit.name}</td>
+                            <td>{visit.register_number}</td>
+                            <td>{visit.admission_number}</td>
                             <td>{visit.purpose}</td>
                             <td>{new Date(visit.punch_in_time).toLocaleString('en-IN')}</td>
                             <td>{visit.punch_out_time ? new Date(visit.punch_out_time).toLocaleString('en-IN') : <strong style={{color: 'green'}}>Still In</strong>}</td>
