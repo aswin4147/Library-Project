@@ -8,7 +8,11 @@ function HistoryPage() {
 
     useEffect(() => {
         const fetchHistory = async () => {
-            const params = new URLSearchParams(filters);
+            // Remove empty filter values to keep the URL clean
+            const activeFilters = Object.fromEntries(
+                Object.entries(filters).filter(([_, value]) => value !== '')
+            );
+            const params = new URLSearchParams(activeFilters);
             setError('');
 
             try {
@@ -18,7 +22,7 @@ function HistoryPage() {
                 
                 const data = await response.json();
 
-                if (Array.isArray(data)) {
+                if (response.ok && Array.isArray(data)) {
                     setVisits(data);
                 } else {
                     setError(data.error || 'An unknown error occurred.');
@@ -41,7 +45,42 @@ function HistoryPage() {
     };
 
     const clearFilters = () => {
-        setFilters({ year: '', month: '', day: '' });
+        setFilters({ year: '', month: '', day: '', purpose: '' });
+    };
+
+    const handleExport = async () => {
+        const activeFilters = Object.fromEntries(
+            Object.entries(filters).filter(([_, value]) => value !== '')
+        );
+        const params = new URLSearchParams(activeFilters);
+        setError('');
+
+        try {
+            const response = await fetch(`http://localhost:3100/api/history/export?${params.toString()}`, {
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({ message: 'Export failed with no error details.' }));
+                throw new Error(errData.message || 'Network response was not ok');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'library_history_report.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+        } catch (error) {
+            console.error('Failed to export history:', error);
+            setError(`Export Failed: ${error.message}`);
+        }
     };
 
     return (
@@ -49,7 +88,6 @@ function HistoryPage() {
             <h1>Visit History</h1>
             
             <form className="filter-form">
-                {/* Filter form inputs */}
                 <div className="form-group">
                     <label>Year:</label>
                     <input type="number" name="year" placeholder="YYYY" value={filters.year} onChange={handleFilterChange} />
@@ -87,6 +125,9 @@ function HistoryPage() {
                 </div>
                 <div className="form-group">
                     <button type="button" onClick={clearFilters} className="btn-clear">Clear Filter</button>
+                    <button type="button" onClick={handleExport} className="btn-export" style={{marginLeft: '10px'}}>
+                        Export to Excel
+                    </button>
                 </div>
             </form>
 

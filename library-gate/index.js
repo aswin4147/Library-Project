@@ -1,16 +1,15 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise'); // Using the promise-based version
+const mysql = require('mysql2/promise');
 const session = require('express-session');
-const path = require('path');
 const bcrypt = require('bcrypt');
-const cors = require('cors'); // Import cors
+const cors = require('cors');
+const ExcelJS = require('exceljs'); // <-- ADD THIS LINE
 
 const app = express();
-const port = 3100; // Backend API runs on port 3100
+const port = 3100;
 
 // --- MySQL Connection Pool Setup ---
-// Using the credentials you provided.
 const dbPool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -23,34 +22,32 @@ const dbPool = mysql.createPool({
 
 // --- Middleware Setup ---
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow requests from our React app
+    origin: 'http://localhost:3000',
     credentials: true
 }));
-app.use(express.json()); // Allows Express to parse JSON body content
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
     secret: 'a_super_secret_key_for_node',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        maxAge: 60 * 60 * 1000, // Cookie expires in 1 hour
-        httpOnly: true // Helps protect against XSS attacks
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true
     }
 }));
     
-// Custom middleware to check if a user is logged in
 const requireLogin = (req, res, next) => {
     if (req.session && req.session.loggedIn) {
-        next(); // If logged in, continue to the requested route
+        next();
     } else {
-        // If not logged in, send an 'Unauthorized' error
         res.status(401).json({ error: 'Unauthorized' });
     }
 };
 
 // --- API Routes ---
 
-// POST /api/login - Handles user login
+// POST /api/login
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     const sql = "SELECT * FROM users WHERE username = ?";
@@ -75,27 +72,26 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// POST /api/logout - Handles user logout
+// POST /api/logout
 app.post('/api/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Could not log out.' });
         }
-        res.clearCookie('connect.sid'); // Clears the session cookie from the browser
+        res.clearCookie('connect.sid');
         res.json({ success: true, message: 'Logged out successfully.' });
     });
 });
 
-// GET /api/check-status - Checks if a user session is active on page load
+// GET /api/check-status
 app.get('/api/check-status', requireLogin, (req, res) => {
     res.json({ success: true, username: req.session.username });
 });
 
-// POST /api/student-status - Checks if a student is currently punched in
+// POST /api/student-details
 app.post('/api/student-details', requireLogin, async (req, res) => {
     const { student_id } = req.body;
     try {
-        // Find a student where either the register number OR admission number matches
         const findStudentSql = "SELECT * FROM students WHERE register_number = ? OR admission_number = ?";
         const [students] = await dbPool.query(findStudentSql, [student_id, student_id]);
 
@@ -104,7 +100,6 @@ app.post('/api/student-details', requireLogin, async (req, res) => {
         }
 
         const student = students[0];
-        // Now check if this student is already punched in
         const checkStatusSql = "SELECT id FROM visits WHERE (register_number = ? OR admission_number = ?) AND punch_out_time IS NULL";
         const [visits] = await dbPool.query(checkStatusSql, [student.register_number, student.admission_number]);
 
@@ -120,8 +115,7 @@ app.post('/api/student-details', requireLogin, async (req, res) => {
     }
 });
 
-
-// POST /api/punch - Handles the final punch-in or punch-out action
+// POST /api/punch
 app.post('/api/punch', requireLogin, async (req, res) => {
     const { register_number, admission_number, purpose, action } = req.body;
     try {
@@ -144,15 +138,56 @@ app.post('/api/punch', requireLogin, async (req, res) => {
     }
 });
 
-// GET /api/history - Gets visit history with optional filters
+// GET /api/history
 app.get('/api/history', requireLogin, async (req, res) => {
-    // Get the new 'purpose' filter from the URL
     const { year, month, day, purpose } = req.query;
-
     let sql = `
         SELECT 
             v.register_number, v.admission_number, v.purpose, v.punch_in_time, v.punch_out_time,
             s.name,
+            TIMESTAMPDIFF(MINUTE, v.punch_in_time, v.punch_out_time) AS duration_minutes 
+        FROM visits v
+        LEFT JOIN students s ON v.register_number = s.register_number
+    `;
+    const whereClauses = [];
+    const params = [];
+
+    if (year) { whereClauses.push("YEAR(v.punch_in_time) = ?"); params.push(year); }
+    if (month) { whereClauses.push("MONTH(v.punch_in_time) = ?"); params.push(month); }
+    if (day) { whereClauses.push("DAY(v.punch_in_time) = ?"); params.push(day); }
+    if (purpose) { whereClauses.push("v.purpose = ?"); params.push(purpose); }
+
+    if (whereClauses.length > 0) {
+        sql += " WHERE " + whereClauses.join(" AND ");
+    }
+    sql += " ORDER BY v.punch_in_time DESC";
+
+    try {
+        const [rows] = await dbPool.query(sql, params);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error retrieving history." });
+    }
+});
+
+
+// =========================================================================
+// ========================= NEW EXPORT ROUTE START ========================
+// =========================================================================
+
+// GET /api/history/export - Exports visit history as an Excel file
+app.get('/api/history/export', requireLogin, async (req, res) => {
+    const { year, month, day, purpose } = req.query;
+
+    let sql = `
+        SELECT 
+            s.name,
+            v.register_number, 
+            v.admission_number, 
+            v.purpose, 
+            v.punch_in_time, 
+            v.punch_out_time,
             TIMESTAMPDIFF(MINUTE, v.punch_in_time, v.punch_out_time) AS duration_minutes 
         FROM visits v
         LEFT JOIN students s ON v.register_number = s.register_number
@@ -164,27 +199,54 @@ app.get('/api/history', requireLogin, async (req, res) => {
     if (year) { whereClauses.push("YEAR(v.punch_in_time) = ?"); params.push(year); }
     if (month) { whereClauses.push("MONTH(v.punch_in_time) = ?"); params.push(month); }
     if (day) { whereClauses.push("DAY(v.punch_in_time) = ?"); params.push(day); }
-    
-    // --- ADD THIS NEW CONDITION ---
-    if (purpose) {
-        whereClauses.push("v.purpose = ?");
-        params.push(purpose);
-    }
+    if (purpose) { whereClauses.push("v.purpose = ?"); params.push(purpose); }
 
     if (whereClauses.length > 0) {
         sql += " WHERE " + whereClauses.join(" AND ");
     }
-
     sql += " ORDER BY v.punch_in_time DESC";
 
     try {
         const [rows] = await dbPool.query(sql, params);
-        res.json(rows);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "No records found for the given filters to export." });
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Library Visit History');
+
+        worksheet.columns = [
+            { header: 'Name', key: 'name', width: 30 },
+            { header: 'Register Number', key: 'register_number', width: 20 },
+            { header: 'Admission Number', key: 'admission_number', width: 20 },
+            { header: 'Purpose', key: 'purpose', width: 15 },
+            { header: 'Punch In Time', key: 'punch_in_time', width: 25, style: { numFmt: 'dd/mm/yyyy hh:mm:ss' } },
+            { header: 'Punch Out Time', key: 'punch_out_time', width: 25, style: { numFmt: 'dd/mm/yyyy hh:mm:ss' } },
+            { header: 'Time Spent (Minutes)', key: 'duration_minutes', width: 25 }
+        ];
+
+        worksheet.addRows(rows);
+
+        res.setHeader(
+            'Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition', 'attachment; filename=library_history_report.xlsx'
+        );
+
+        await workbook.xlsx.write(res);
+        res.end();
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Error retrieving history." });
+        console.error('Export Error:', err);
+        res.status(500).json({ error: "Failed to export history." });
     }
 });
+
+// =======================================================================
+// ========================= NEW EXPORT ROUTE END ========================
+// =======================================================================
 
 
 // --- Start the server ---
