@@ -252,4 +252,4 @@ app.get('/api/history/export', requireLogin, async (req, res) => {
 // --- Start the server ---
 app.listen(port, () => {
     console.log(`Backend API server running at http://localhost:${port}`);
-});
+}); 

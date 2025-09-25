@@ -1,176 +1,154 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 function PunchPage() {
-  const [inputId, setInputId] = useState("");
-  const [studentDetails, setStudentDetails] = useState(null);
-  const [isPunchedIn, setIsPunchedIn] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
+    const [studentId, setStudentId] = useState('');
+    const [studentDetails, setStudentDetails] = useState(null);
+    const [isPunchedIn, setIsPunchedIn] = useState(null);
+    const [message, setMessage] = useState('');
+    const [messageType, setMessageType] = useState('');
+    const [currentTime, setCurrentTime] = useState(new Date());
 
-  const handleIdSubmit = async (event) => {
-    event.preventDefault();
-    setMessage("");
-    try {
-      const response = await fetch(
-        "http://localhost:3100/api/student-details",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ student_id: inputId.trim() }),
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const displayFlashMessage = (msg, type) => {
+        setMessage(msg);
+        setMessageType(type);
+        setTimeout(() => {
+            setMessage('');
+            setMessageType('');
+        }, 4000);
+    };
+
+    const handleIdSubmit = async (event) => {
+        event.preventDefault();
+        setMessage('');
+        try {
+            const response = await fetch('http://localhost:3100/api/student-details', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ student_id: studentId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                setStudentDetails(data.student);
+                setIsPunchedIn(data.isPunchedIn);
+            } else {
+                displayFlashMessage(data.message, 'error');
+                setStudentId('');
+            }
+        } catch (err) {
+            displayFlashMessage('Server error. Please try again.', 'error');
         }
-      );
-      const data = await response.json();
-      if (data.success) {
-        setStudentDetails(data.student);
-        setIsPunchedIn(data.isPunchedIn);
-      } else {
-        setMessage(data.message);
-        setMessageType("error");
-      }
-    } catch (err) {
-      setMessage("Server error.");
-      setMessageType("error");
-    }
-  };
+    };
 
-  const handlePunchAction = async (punchData) => {
-    try {
-      const response = await fetch("http://localhost:3100/api/punch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(punchData),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setMessage(data.message);
-        setMessageType("success");
-      } else {
-        setMessage(data.message || "An error occurred.");
-        setMessageType("error");
-      }
-    } catch (err) {
-      setMessage("Server error.");
-      setMessageType("error");
-    }
-    // Reset the state to go back to the ID entry screen
-    setStudentDetails(null);
-    setInputId("");
-  };
-
-  const resetState = () => {
-    setStudentDetails(null);
-    setInputId("");
-    setMessage("");
-  };
-
-  // This renders the main ID entry form
-  const renderIdEntryForm = () => (
-    <form onSubmit={handleIdSubmit}>
-      <div className="form-group">
-        <label htmlFor="student_id">Enter Register or Admission Number:</label>
-        <input
-          type="text"
-          id="student_id"
-          value={inputId}
-          onChange={(e) => setInputId(e.target.value)}
-          required
-          autoFocus
-        />
-      </div>
-      <button type="submit">Submit</button>
-    </form>
-  );
-
-  // This renders the action screen after a student is found
-  const renderActionScreen = () => (
-    <div>
-      <h2>Student Details</h2>
-      <p>
-        <strong>Name:</strong> {studentDetails.name}
-      </p>
-      <p>
-        <strong>Register No:</strong> {studentDetails.register_number}
-      </p>
-      <p>
-        <strong>Admission No:</strong> {studentDetails.admission_number}
-      </p>
-      <hr />
-      {isPunchedIn ? (
-        <div>
-          <p>This student is currently punched in.</p>
-          <button
-            onClick={() =>
-              handlePunchAction({
-                register_number: studentDetails.register_number,
-                admission_number: studentDetails.admission_number,
-                action: "punch_out",
-              })
+    const handlePunchAction = async (punchData) => {
+        try {
+            const response = await fetch('http://localhost:3100/api/punch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(punchData)
+            });
+            const data = await response.json();
+            if (data.success) {
+                displayFlashMessage(data.message, 'success');
+            } else {
+                displayFlashMessage(data.message || 'An error occurred.', 'error');
             }
-            className="btn-punch-out"
-          >
-            Punch Out
-          </button>
+        } catch (err) {
+            displayFlashMessage('Server error.', 'error');
+        }
+        setIsPunchedIn(null);
+        setStudentId('');
+        setStudentDetails(null);
+    };
+
+    const resetState = () => {
+        setIsPunchedIn(null);
+        setStudentId('');
+        setStudentDetails(null);
+        setMessage('');
+    };
+
+    const renderActionButtons = () => {
+        const commonData = {
+            register_number: studentDetails.register_number,
+            admission_number: studentDetails.admission_number
+        };
+
+        if (isPunchedIn) {
+            return (
+                <div className="punch-actions">
+                    <button onClick={() => handlePunchAction({ ...commonData, action: 'punch_out' })} className="btn-punch-out">Punch Out</button>
+                </div>
+            );
+        } else {
+            return (
+                <div className="punch-actions">
+                    <label>Select Purpose of Visit:</label>
+                    <button onClick={() => handlePunchAction({ ...commonData, action: 'punch_in', purpose: 'Reading' })} className="btn-purpose">Reading</button>
+                    <button onClick={() => handlePunchAction({ ...commonData, action: 'punch_in', purpose: 'Lending' })} className="btn-purpose">Lending</button>
+                    <button onClick={() => handlePunchAction({ ...commonData, action: 'punch_in', purpose: 'Book Bank' })} className="btn-purpose">Book Bank</button>
+                </div>
+            );
+        }
+    };
+
+    return (
+        <div className="container">
+            {message && <div className={`flash ${messageType}`}>{message}</div>}
+            
+            <h1>Student Access Point</h1>
+            <h2>Enter ID to record your visit</h2>
+
+            {!studentDetails && (
+                <div className="current-time-widget">
+                    <span className="date">
+                        {currentTime.toLocaleDateString('en-IN', { 
+                            weekday: 'short', 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        })}
+                    </span>
+                    <span className="time">
+                        {currentTime.toLocaleTimeString('en-IN', { 
+                            hour: '2-digit', 
+                            minute: '2-digit', 
+                            second: '2-digit' 
+                        })}
+                    </span>
+                </div>
+            )}
+
+            {!studentDetails ? (
+                <form onSubmit={handleIdSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="student_id">Enter Student Register or Admission No.</label>
+                        <input type="text" id="student_id" value={studentId} onChange={(e) => setStudentId(e.target.value)} required autoFocus />
+                    </div>
+                    <button type="submit" style={{ width: '100%' }}>Check Status</button>
+                </form>
+            ) : (
+                <div className="student-welcome-container">
+                    {/* THIS IS THE UPDATED LINE */}
+                    <h2>
+                        {isPunchedIn ? 'Finalize Visit for' : 'Welcome,'} <strong>{studentDetails.name}</strong>
+                    </h2>
+                    
+                    {renderActionButtons()}
+                    <button onClick={resetState} className="nav-link" style={{ background: 'none', color: 'var(--gray-500)', marginTop: '2.5rem'}}>← Scan New ID</button>
+                </div>
+            )}
         </div>
-      ) : (
-        <div>
-          <label>Select Purpose of Visit:</label>
-          <button
-            onClick={() =>
-              handlePunchAction({
-                register_number: studentDetails.register_number,
-                admission_number: studentDetails.admission_number,
-                action: "punch_in",
-                purpose: "Reading",
-              })
-            }
-            className="btn-purpose"
-          >
-            Reading
-          </button>
-          <button
-            onClick={() =>
-              handlePunchAction({
-                register_number: studentDetails.register_number,
-                admission_number: studentDetails.admission_number,
-                action: "punch_in",
-                purpose: "Lending",
-              })
-            }
-            className="btn-purpose"
-          >
-            Lending
-          </button>
-          <button
-            onClick={() =>
-              handlePunchAction({
-                register_number: studentDetails.register_number,
-                admission_number: studentDetails.admission_number,
-                action: "punch_in",
-                purpose: "Book Bank",
-              })
-            }
-            className="btn-purpose"
-          >
-            Book Bank
-          </button>
-        </div>
-      )}
-      <button onClick={resetState} className="nav-link">
-        ← Back to ID Entry
-      </button>
-    </div>
-  );
-
-  return (
-    <div className="container">
-      {message && <div className={`flash ${messageType}`}>{message}</div>}
-      <h1>Library Punch-in System</h1>
-
-      {studentDetails ? renderActionScreen() : renderIdEntryForm()}
-    </div>
-  );
+    );
 }
 
 export default PunchPage;

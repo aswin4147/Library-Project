@@ -4,22 +4,28 @@ import './App.css';
 import LoginPage from './LoginPage';
 import PunchPage from './PunchPage';
 import HistoryPage from './HistoryPage';
-import Header from './Header'; // Import the new Header component
+import Header from './Header';
+import Footer from './Footer';
 
 // A wrapper component for all protected pages
 function AppLayout({ handleLogout }) {
     return (
-        <div>
+        // 1. Add this wrapper div for the flex layout
+        <div className="app-layout"> 
             <Header onLogout={handleLogout} />
-            <main>
-                <Outlet /> {/* This will render the specific page component (PunchPage or HistoryPage) */}
+            {/* 2. Add a class to the main content area */}
+            <main className="main-content"> 
+                <Outlet />
             </main>
+            <Footer />
         </div>
     );
 }
 
+// ... the rest of your App.js file remains the same ...
 
 function App() {
+    // (No changes needed in this part)
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -57,12 +63,10 @@ function App() {
                     element={!isLoggedIn ? <LoginPage onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />} 
                 />
                 
-                {/* All protected routes will now use the AppLayout */}
                 <Route 
                     path="/" 
                     element={isLoggedIn ? <AppLayout handleLogout={handleLogout} /> : <Navigate to="/login" />}
                 >
-                    {/* These are the child routes that will be rendered inside AppLayout's <Outlet /> */}
                     <Route index element={<PunchPage />} />
                     <Route path="history" element={<HistoryPage />} />
                 </Route>

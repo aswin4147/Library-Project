@@ -8,7 +8,6 @@ function HistoryPage() {
 
     useEffect(() => {
         const fetchHistory = async () => {
-            // Remove empty filter values to keep the URL clean
             const activeFilters = Object.fromEntries(
                 Object.entries(filters).filter(([_, value]) => value !== '')
             );
@@ -48,6 +47,7 @@ function HistoryPage() {
         setFilters({ year: '', month: '', day: '', purpose: '' });
     };
 
+    // --- YOUR ORIGINAL SERVER-SIDE EXPORT FUNCTION ---
     const handleExport = async () => {
         const activeFilters = Object.fromEntries(
             Object.entries(filters).filter(([_, value]) => value !== '')
@@ -70,7 +70,7 @@ function HistoryPage() {
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = 'library_history_report.xlsx';
+            a.download = 'library_history_report.xlsx'; // Downloads the file from your backend
             document.body.appendChild(a);
             a.click();
             
@@ -85,80 +85,71 @@ function HistoryPage() {
 
     return (
         <div className="container wide">
-            <h1>Visit History</h1>
+            <div className="page-header">
+                <h1>Visit History</h1>
+                <div>
+                    {/* --- BUTTON NOW USES YOUR HANDLEEXPORT FUNCTION --- */}
+                    <button onClick={handleExport} className="btn-secondary" style={{ marginRight: '1rem' }}>
+                        Export to Excel
+                    </button>
+                    <Link to="/" className="btn-secondary">← Back to Punch Page</Link>
+                </div>
+            </div>
             
             <form className="filter-form">
                 <div className="form-group">
-                    <label>Year:</label>
+                    <label>Year</label>
                     <input type="number" name="year" placeholder="YYYY" value={filters.year} onChange={handleFilterChange} />
                 </div>
                 <div className="form-group">
-                    <label>Month:</label>
+                    <label>Month</label>
                     <select name="month" value={filters.month} onChange={handleFilterChange}>
-                        <option value="">All</option>
-                        <option value="1">January</option>
-                        <option value="2">February</option>
-                        <option value="3">March</option>
-                        <option value="4">April</option>
-                        <option value="5">May</option>
-                        <option value="6">June</option>
-                        <option value="7">July</option>
-                        <option value="8">August</option>
-                        <option value="9">September</option>
-                        <option value="10">October</option>
-                        <option value="11">November</option>
-                        <option value="12">December</option>
+                        <option value="">All</option><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option>
                     </select>
                 </div>
                 <div className="form-group">
-                    <label>Day:</label>
+                    <label>Day</label>
                     <input type="number" name="day" placeholder="DD" value={filters.day} onChange={handleFilterChange} />
                 </div>
-                 <div className="form-group">
-                    <label>Purpose:</label>
+                <div className="form-group">
+                    <label>Purpose</label>
                     <select name="purpose" value={filters.purpose} onChange={handleFilterChange}>
-                        <option value="">All</option>
-                        <option value="Reading">Reading</option>
-                        <option value="Lending">Lending</option>
-                        <option value="Book Bank">Book Bank</option>
+                        <option value="">All</option><option value="Reading">Reading</option><option value="Lending">Lending</option><option value="Book Bank">Book Bank</option>
                     </select>
                 </div>
                 <div className="form-group">
-                    <button type="button" onClick={clearFilters} className="btn-clear">Clear Filter</button>
-                    <button type="button" onClick={handleExport} className="btn-export" style={{marginLeft: '10px'}}>
-                        Export to Excel
-                    </button>
+                    <button type="button" onClick={clearFilters} className="btn-clear">Clear</button>
                 </div>
             </form>
 
-            <Link to="/" className="nav-link">← Back to Punch-in Page</Link>
-            
             {error && <div className="flash error">{error}</div>}
 
             <table>
-                <thead>
+                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Register Number</th>
-                        <th>Admission Number</th>
+                        <th>Register No.</th>
                         <th>Purpose</th>
-                        <th>Punch In Time</th>
-                        <th>Punch Out Time</th>
-                        <th>Time Spent (Minutes)</th>
+                        <th>Punch In</th>
+                        <th>Punch Out</th>
+                        <th>Duration (Mins)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {visits.map((visit, index) => (
+                    {visits.length > 0 ? visits.map((visit, index) => (
                         <tr key={index}>
                             <td>{visit.name}</td>
                             <td>{visit.register_number}</td>
-                            <td>{visit.admission_number}</td>
                             <td>{visit.purpose}</td>
                             <td>{new Date(visit.punch_in_time).toLocaleString('en-IN')}</td>
-                            <td>{visit.punch_out_time ? new Date(visit.punch_out_time).toLocaleString('en-IN') : <strong style={{color: 'green'}}>Still In</strong>}</td>
-                            <td>{visit.duration_minutes !== null ? visit.duration_minutes : '-'}</td>
+                            <td>{visit.punch_out_time ? new Date(visit.punch_out_time).toLocaleString('en-IN') : <strong style={{color: 'var(--success-color)'}}>Still In</strong>}</td>
+                            <td>{visit.duration_minutes !== null ? visit.duration_minutes : '—'}</td>
                         </tr>
-                    ))}
+                    )) : (
+                        <tr>
+                            <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No records found for the selected filters.</td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>

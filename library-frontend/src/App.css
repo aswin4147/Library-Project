@@ -1,135 +1,425 @@
-body { font-family: sans-serif; background-color: #f4f4f9; color: #333; margin: 0; }
-.container { max-width: 500px; margin: 2em auto; padding: 2em; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-.container.wide { max-width: 900px; }
-.form-group { margin-bottom: 1em; }
-label { display: block; margin-bottom: 0.5em; font-weight: bold; }
-input[type="text"], input[type="password"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-button { padding: 10px 15px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
-button:hover { background-color: #0056b3; }
-a { text-decoration: none; color: #007bff; }
-a:hover { text-decoration: underline; }
-.nav-link { display: inline-block; margin-bottom: 1em; }
-.flash { padding: 1em; margin-bottom: 1em; border-radius: 5px; }
-.flash.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;}
-.flash.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;}
-table { width: 100%; border-collapse: collapse; }
-th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-th { background-color: #f2f2f2; }
+/* Import a clean, modern font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
-/* Header and Logout Button Styles */
+/* New Professional Color Palette (Teal & Grey) */
+:root {
+  --primary-color: #0d9488; /* A sophisticated, deep teal */
+  --primary-hover: #0f766e;
+  --danger-color: #dc2626;
+  --danger-hover: #b91c1c;
+  --success-color: #16a34a;
+  --gray-50: #f8fafc;   /* Page background */
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-500: #64748b;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --text-color: #1e293b; /* Dark charcoal for text */
+  --card-bg: #ffffff;
+  --card-shadow: rgba(30, 41, 59, 0.04);
+  --border-radius: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--gray-50);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+/* --- Layout & Structure (Footer fixed to bottom) --- */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+}
+
+.container {
+  max-width: 550px;
+  margin: 3rem auto;
+  padding: 2.5rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--gray-200);
+  box-shadow: 0 4px 10px var(--card-shadow);
+}
+
+.container.wide {
+  max-width: 1100px;
+}
+
+/* --- HEADINGS (Clean & Professional) --- */
+h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--gray-500);
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+/* --- Header --- */
 .main-header {
-    background-color: #333;
-    color: white;
-    padding: 0.5em 2em;
-    margin-bottom: 2em;
-}
-.user-info {
-    text-align: right;
-}
-.user-info span {
-    margin-right: 1em;
-}
-.user-info a {
-    color: #ffc107;
-    font-weight: bold;
-    text-decoration: none;
-}
-.user-info a:hover {
-    text-decoration: underline;
-}
-
-/* New styles */
-.top-right-link {
-    position: absolute;
-    top: 1.5em;
-    right: 2em;
-    color: #007bff;
-    font-weight: bold;
-}
-
-.btn-purpose, .btn-punch-out {
-    display: block;
-    width: 100%;
-    padding: 15px;
-    margin-bottom: 10px;
-    font-size: 1.2em;
-}
-
-.btn-punch-out {
-    background-color: #dc3545; /* Red for punch out */
-}
-.btn-punch-out:hover {
-    background-color: #c82333;
-}
-
-/* Filter Form Styles */
-.filter-form {
-    display: flex;
-    gap: 1em;
-    align-items: flex-end;
-    margin-bottom: 2em;
-    background-color: #f8f9fa;
-    padding: 1em;
-    border-radius: 8px;
-}
-.filter-form .form-group {
-    margin-bottom: 0;
-}
-.filter-form select, .filter-form input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-.filter-form .btn-clear {
-    background-color: #6c757d;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 4px;
-    display: inline-block;
-}
-.filter-form .btn-clear:hover {
-    background-color: #5a6268;
-    text-decoration: none;
-}
-/* Update Header Styles */
-.main-header {
-    background-color: #333;
-    color: white;
-    padding: 0 2em;
-    margin-bottom: 2em;
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 2rem;
 }
 
 .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 64px;
+}
+
+/* --- New Header Brand & Logo --- */
+.header-brand {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    height: 60px;
+    gap: 0.7rem; /* Slightly reduced gap */
+    text-decoration: none;
+    color: var(--text-color); /* Ensure link color is text color */
 }
 
-.header-logo {
+.header-logo-icon {
+    width: 60px;
+    height: 36px;
+    background-color: var(--primary-color);
+    border-radius: 6px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+    /* --- Cursive Font Styling --- */
+    font-family: 'Pacifico', cursive;
     color: white;
-    font-size: 1.5em;
-    font-weight: bold;
-    text-decoration: none;
+    font-size: 1.2rem;
+    padding-bottom: 4px;
+    
+    /* UPDATED: Adds a crisp black outline and keeps a soft white glow */
+    text-shadow: 
+        -1px -1px 0 #000,  
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000,
+         0 0 5px rgba(255, 255, 255, 0.2);
 }
 
+
+.header-logo-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* --- Navigation --- */
 .header-nav a, .header-nav button {
-    color: #ffc107;
-    font-weight: bold;
+    color: var(--gray-700);
+    font-weight: 500;
     text-decoration: none;
-    margin-left: 2em;
-    font-size: 1em;
-}
-
-.header-nav a:hover {
-    text-decoration: underline;
+    margin-left: 2rem;
+    font-size: 1.05rem; /* Increased font size */
+    padding: 0.25rem 0.5rem;
+    position: relative;
+    transition: color 0.3s ease;
 }
 
 .logout-btn {
     background: none;
     border: none;
     padding: 0;
+    margin: 0;
+    font: inherit; /* Inherit all font properties from parent */
     cursor: pointer;
+    text-align: inherit;
+    color: inherit;
+}
+
+/* New underline animation effect */
+.header-nav a::after, .header-nav .logout-btn::after { /* Apply to logout button too */
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: var(--primary-color);
+    transform: scaleX(0); /* Initially hidden */
+    transform-origin: bottom right;
+    transition: transform 0.3s ease-out;
+}
+
+.header-nav a:hover::after, .header-nav .logout-btn:hover::after { /* Apply to logout button too */
+    transform: scaleX(1); /* Show on hover */
+    transform-origin: bottom left;
+}
+
+.header-nav a:hover, .header-nav .logout-btn:hover { /* Apply to logout button too */
+    color: var(--text-color);
+}
+
+
+/* --- Forms --- */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+/* --- Buttons --- */
+button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-punch-out {
+  background-color: var(--danger-color);
+}
+.btn-punch-out:hover {
+  background-color: var(--danger-hover);
+}
+
+.btn-purpose {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  text-align: center;
+  background-color: var(--gray-100);
+  color: var(--text-color);
+  border: 1px solid var(--gray-200);
+}
+.btn-purpose:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-hover);
+  color: white; /* Change text to white for contrast */
+}
+
+/* --- Links & Navigation --- */
+.nav-link {
+  display: block;
+  margin-top: 1.5rem;
+  text-align: center;
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+}
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Flash Messages --- */
+.flash {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  text-align: center;
+  font-weight: 500;
+}
+.flash.success {
+  background-color: #dcfce7;
+  color: #14532d;
+  border-color: #bbf7d0;
+}
+.flash.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+
+/* --- History Page Table --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+}
+
+th, td {
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+th {
+  background-color: var(--gray-50);
+  font-weight: 500;
+  color: var(--gray-500);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+tbody tr:hover {
+  background-color: var(--gray-50);
+}
+
+/* --- History Page Filter Form --- */
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+  background-color: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--gray-200);
+}
+
+.filter-form .form-group {
+  margin-bottom: 0;
+  flex-grow: 1;
+  min-width: 150px;
+}
+
+.filter-form .btn-clear {
+  background-color: var(--gray-500);
+  color: white;
+}
+.filter-form .btn-clear:hover {
+  background-color: var(--gray-700);
+}
+
+/* --- Punch Page Specifics --- */
+.punch-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* --- Page Header for non-brand pages --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.btn-secondary {
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-hover); /* Also update border color */
+  color: white; /* Change text to white for contrast */
+}
+
+/* --- Footer --- */
+.main-footer {
+    text-align: center;
+    padding: 1.5rem; /* Slightly reduced padding */
+    margin-top: 2rem;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--gray-200);
+    color: var(--gray-500);
+    font-size: 0.85rem; /* Slightly smaller font */
+}
+
+
+/* --- NEW: Real-time Clock Styling --- */
+.current-time-widget {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--gray-700);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.current-time-widget .time {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: 1px;
+}
+
+.current-time-widget .date {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+}
+
+.student-welcome-container h2 strong {
+    color: var(--primary-color);
+    font-weight: 600; /* Make the name stand out a bit more */
 }
