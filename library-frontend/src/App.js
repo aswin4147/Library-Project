@@ -4,16 +4,16 @@ import './App.css';
 import LoginPage from './LoginPage';
 import PunchPage from './PunchPage';
 import HistoryPage from './HistoryPage';
+// --- 1. Import the new component ---
+import StudentDetailsPage from './StudentDetailsPage'; 
 import Header from './Header';
 import Footer from './Footer';
 
 // A wrapper component for all protected pages
 function AppLayout({ handleLogout }) {
     return (
-        // 1. Add this wrapper div for the flex layout
         <div className="app-layout"> 
             <Header onLogout={handleLogout} />
-            {/* 2. Add a class to the main content area */}
             <main className="main-content"> 
                 <Outlet />
             </main>
@@ -22,10 +22,7 @@ function AppLayout({ handleLogout }) {
     );
 }
 
-// ... the rest of your App.js file remains the same ...
-
 function App() {
-    // (No changes needed in this part)
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [loading, setLoading] = useState(true);
 
@@ -69,6 +66,8 @@ function App() {
                 >
                     <Route index element={<PunchPage />} />
                     <Route path="history" element={<HistoryPage />} />
+                    {/* --- 2. Add the new route for the student details page --- */}
+                    <Route path="students" element={<StudentDetailsPage />} />
                 </Route>
                 
                 <Route path="*" element={<Navigate to="/" />} />
@@ -78,3 +77,4 @@ function App() {
 }
 
 export default App;
+

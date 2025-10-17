@@ -15,22 +15,22 @@ require("dotenv").config();
     const [versionRows] = await conn.query("SELECT VERSION() AS v");
     console.log("MySQL reachable, version:", versionRows[0].v);
 
-    // Drop existing tables
-    await conn.query("DROP TABLE IF EXISTS visits;");
-    await conn.query("DROP TABLE IF EXISTS students;");
+    // The destructive DROP TABLE commands have been removed.
+    // This script is now safe to run and will not delete your data.
 
-    // Create students table
+    // Create students table IF IT DOESN'T EXIST
     await conn.query(`
       CREATE TABLE IF NOT EXISTS students (
         id INT AUTO_INCREMENT PRIMARY KEY,
         register_number VARCHAR(255) NOT NULL UNIQUE,
         name VARCHAR(255) NOT NULL,
-        admission_number VARCHAR(255) NOT NULL UNIQUE
+        admission_number VARCHAR(255) NOT NULL UNIQUE,
+        department VARCHAR(255) NOT NULL 
       );
     `);
     console.log("Table 'students' is ready.");
 
-    // Create visits table
+    // Create visits table IF IT DOESN'T EXIST
     await conn.query(`
       CREATE TABLE IF NOT EXISTS visits (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,11 +42,28 @@ require("dotenv").config();
       );
     `);
     console.log("Table 'visits' is ready.");
+    
+    // Create users table IF IT DOESN'T EXIST
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL
+      );
+    `);
+    console.log("Table 'users' is ready.");
+
 
     await conn.end();
+    console.log("Database setup complete.");
     process.exit(0);
-  } catch (err) {
+  } catch (err)
+   {
     console.error("DB setup failed:", err.message);
     process.exit(1);
   }
 })();
+
+
+    
+

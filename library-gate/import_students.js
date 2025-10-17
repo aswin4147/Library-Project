@@ -22,10 +22,10 @@ async function importData() {
         const worksheet = workbook.Sheets[sheetName];
         
         // 2. Convert the sheet to a JSON array
-        // IMPORTANT: The `header` option assumes your Excel columns are named exactly:
-        // 'RegisterNumber', 'Name', 'AdmissionNumber'
+        // **MODIFIED**: Added "Department" to the header array.
+        // This assumes your Excel file now has a 'Department' column.
         const students = xlsx.utils.sheet_to_json(worksheet, {
-            header: ["SlNo", "RegisterNumber", "Name", "AdmissionNumber"],
+            header: ["SlNo", "RegisterNumber", "Name", "AdmissionNumber", "Department"],
             range: 1 // Skip the first row (headers)
         });
 
@@ -45,29 +45,31 @@ async function importData() {
         
         // 4. Loop through each student and insert/update the database
         for (const student of students) {
-            // Make sure the required fields exist
-            if (!student.RegisterNumber || !student.Name || !student.AdmissionNumber) {
+            // **MODIFIED**: Added a check for student.Department.
+            if (!student.RegisterNumber || !student.Name || !student.AdmissionNumber || !student.Department) {
                 console.warn('Skipping row due to missing data:', student);
                 continue;
             }
 
+            // **MODIFIED**: Updated the SQL query to include the 'department' column.
             const sql = `
-                INSERT INTO students (register_number, name, admission_number) 
-                VALUES (?, ?, ?)
+                INSERT INTO students (register_number, name, admission_number, department) 
+                VALUES (?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE 
                     name = VALUES(name), 
-                    admission_number = VALUES(admission_number);
+                    admission_number = VALUES(admission_number),
+                    department = VALUES(department);
             `;
             
-            const params = [student.RegisterNumber, student.Name, student.AdmissionNumber];
+            // **MODIFIED**: Added student.Department to the parameters array.
+            const params = [student.RegisterNumber, student.Name, student.AdmissionNumber, student.Department];
             const [result] = await connection.execute(sql, params);
 
             if (result.affectedRows > 0) {
-                // `insertId` is non-zero for new inserts, `affectedRows` can be 1 for an update with no actual data change
-                // A better check is `result.warningStatus === 0` for insert and non-zero for update
                 if (result.insertId > 0) {
                     recordsInserted++;
                 } else {
+                    // This counts updates, including cases where data was identical.
                     recordsUpdated++;
                 }
             }

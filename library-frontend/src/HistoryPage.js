@@ -47,7 +47,6 @@ function HistoryPage() {
         setFilters({ year: '', month: '', day: '', purpose: '' });
     };
 
-    // --- YOUR ORIGINAL SERVER-SIDE EXPORT FUNCTION ---
     const handleExport = async () => {
         const activeFilters = Object.fromEntries(
             Object.entries(filters).filter(([_, value]) => value !== '')
@@ -70,7 +69,7 @@ function HistoryPage() {
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = 'library_history_report.xlsx'; // Downloads the file from your backend
+            a.download = 'library_history_report.xlsx';
             document.body.appendChild(a);
             a.click();
             
@@ -88,7 +87,6 @@ function HistoryPage() {
             <div className="page-header">
                 <h1>Visit History</h1>
                 <div>
-                    {/* --- BUTTON NOW USES YOUR HANDLEEXPORT FUNCTION --- */}
                     <button onClick={handleExport} className="btn-secondary" style={{ marginRight: '1rem' }}>
                         Export to Excel
                     </button>
@@ -125,32 +123,37 @@ function HistoryPage() {
             {error && <div className="flash error">{error}</div>}
 
             <table>
-                 <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Register No.</th>
-                        <th>Purpose</th>
-                        <th>Punch In</th>
-                        <th>Punch Out</th>
-                        <th>Duration (Mins)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {visits.length > 0 ? visits.map((visit, index) => (
-                        <tr key={index}>
-                            <td>{visit.name}</td>
-                            <td>{visit.register_number}</td>
-                            <td>{visit.purpose}</td>
-                            <td>{new Date(visit.punch_in_time).toLocaleString('en-IN')}</td>
-                            <td>{visit.punch_out_time ? new Date(visit.punch_out_time).toLocaleString('en-IN') : <strong style={{color: 'var(--success-color)'}}>Still In</strong>}</td>
-                            <td>{visit.duration_minutes !== null ? visit.duration_minutes : '—'}</td>
-                        </tr>
-                    )) : (
-                        <tr>
-                            <td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>No records found for the selected filters.</td>
-                        </tr>
-                    )}
-                </tbody>
+                  <thead>
+                      <tr>
+                          <th>Name</th>
+                          <th>Register No.</th>
+                          {/* --- CHANGE 1: Added Department Header --- */}
+                          <th>Department</th>
+                          <th>Purpose</th>
+                          <th>Punch In</th>
+                          <th>Punch Out</th>
+                          <th>Duration (Mins)</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {visits.length > 0 ? visits.map((visit, index) => (
+                          <tr key={index}>
+                              <td>{visit.name}</td>
+                              <td>{visit.register_number}</td>
+                              {/* --- CHANGE 2: Added Department Data Cell --- */}
+                              <td>{visit.department}</td>
+                              <td>{visit.purpose}</td>
+                              <td>{new Date(visit.punch_in_time).toLocaleString('en-IN')}</td>
+                              <td>{visit.punch_out_time ? new Date(visit.punch_out_time).toLocaleString('en-IN') : <strong style={{color: 'var(--success-color)'}}>Still In</strong>}</td>
+                              <td>{visit.duration_minutes !== null ? visit.duration_minutes : '—'}</td>
+                          </tr>
+                      )) : (
+                          <tr>
+                              {/* --- CHANGE 3: Updated Colspan --- */}
+                              <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>No records found for the selected filters.</td>
+                          </tr>
+                      )}
+                  </tbody>
             </table>
         </div>
     );
