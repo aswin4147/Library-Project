@@ -423,3 +423,85 @@ tbody tr:hover {
     color: var(--primary-color);
     font-weight: 600; /* Make the name stand out a bit more */
 }
+
+/* --- History Page Filter Form --- */
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+  background-color: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--gray-200);
+}
+
+.filter-form .form-group {
+  margin-bottom: 0;
+  flex-grow: 1;
+  min-width: 150px;
+}
+
+.filter-form .form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+}
+
+.filter-form .form-group input[type="date"],
+.filter-form .form-group input[type="number"],
+.filter-form .form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.filter-form .form-group input:focus,
+.filter-form .form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+.filter-form .btn-clear {
+  background-color: var(--gray-500);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  height: fit-content;
+}
+
+.filter-form .btn-clear:hover {
+  background-color: var(--gray-700);
+}
+
+/* Ensure date inputs have consistent appearance across browsers */
+.filter-form input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.filter-form input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 3px;
+}
+
+.filter-form input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  background-color: var(--gray-100);
+}

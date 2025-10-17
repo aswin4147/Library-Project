@@ -58,7 +58,20 @@ function PunchPage() {
             });
             const data = await response.json();
             if (data.success) {
-                displayFlashMessage(data.message, 'success');
+                // ==================== CHANGE IS HERE ====================
+                // We now create a custom success message using the student's name
+                // instead of using the generic one from the server.
+                if (punchData.action === 'punch_in') {
+                    const successMessage = `${studentDetails.name} punched IN for ${punchData.purpose}.`;
+                    displayFlashMessage(successMessage, 'success');
+                } else if (punchData.action === 'punch_out') {
+                    const successMessage = `${studentDetails.name} punched OUT successfully.`;
+                    displayFlashMessage(successMessage, 'success');
+                } else {
+                    // Fallback for any other actions
+                    displayFlashMessage(data.message, 'success');
+                }
+                // =======================================================
             } else {
                 displayFlashMessage(data.message || 'An error occurred.', 'error');
             }
@@ -138,7 +151,6 @@ function PunchPage() {
                 </form>
             ) : (
                 <div className="student-welcome-container">
-                    {/* THIS IS THE UPDATED LINE */}
                     <h2>
                         {isPunchedIn ? 'Finalize Visit for' : 'Welcome,'} <strong>{studentDetails.name}</strong>
                     </h2>
