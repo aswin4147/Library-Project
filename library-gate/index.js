@@ -270,10 +270,39 @@ app.get("/api/history/export", requireLogin, async (req, res) => {
 // --- STUDENT DATABASE MANAGEMENT ROUTES (No changes in this section) ---
 
 app.get("/api/students", requireLogin, async (req, res) => {
+    // --- 1. Get filter parameters from query string ---
+    const { department, register_number, admission_number } = req.query;
+
     try {
-        const sql = "SELECT register_number, name, admission_number, department FROM students ORDER BY name";
-        const [rows] = await dbPool.query(sql);
+        let sql = "SELECT register_number, name, admission_number, department FROM students";
+        const whereClauses = [];
+        const params = [];
+
+        // --- 2. Build WHERE clause dynamically ---
+        if (department) {
+            // Use LIKE for partial matching on department
+            whereClauses.push("department LIKE ?");
+            params.push(`%${department}%`);
+        }
+        if (register_number) {
+            whereClauses.push("register_number = ?");
+            params.push(register_number);
+        }
+        if (admission_number) {
+            whereClauses.push("admission_number = ?");
+            params.push(admission_number);
+        }
+
+        if (whereClauses.length > 0) {
+            sql += " WHERE " + whereClauses.join(" AND ");
+        }
+
+        sql += " ORDER BY name"; // Keep ordering
+
+        // --- 3. Execute the query with params ---
+        const [rows] = await dbPool.query(sql, params);
         res.json(rows);
+
     } catch (err) {
         console.error("SQL Error fetching students:", err);
         res.status(500).json({ error: "Database error while fetching students." });
