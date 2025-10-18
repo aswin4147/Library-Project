@@ -15,27 +15,27 @@ require("dotenv").config();
     const [versionRows] = await conn.query("SELECT VERSION() AS v");
     console.log("MySQL reachable, version:", versionRows[0].v);
 
-    // Create students table
+    // Create students table with admission_number as PRIMARY KEY (no id column)
     await conn.query(`
       CREATE TABLE IF NOT EXISTS students (
-        id INT AUTO_INCREMENT PRIMARY KEY,
         register_number VARCHAR(255) NULL,
         name VARCHAR(255) NOT NULL,
-        admission_number VARCHAR(255) NOT NULL UNIQUE,
+        admission_number VARCHAR(255) PRIMARY KEY,  -- CHANGED: Now PRIMARY KEY
         department VARCHAR(255) NOT NULL 
       );
     `);
     console.log("Table 'students' is ready.");
 
-    // Create visits table - FIXED: register_number can be NULL
+    // Create visits table with admission_number as FOREIGN KEY
     await conn.query(`
       CREATE TABLE IF NOT EXISTS visits (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        register_number VARCHAR(255) NULL,  -- CHANGED TO NULL
+        register_number VARCHAR(255) NULL,
         admission_number VARCHAR(255) NOT NULL,
         purpose VARCHAR(255) NOT NULL,
         punch_in_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        punch_out_time TIMESTAMP NULL
+        punch_out_time TIMESTAMP NULL,
+        FOREIGN KEY (admission_number) REFERENCES students(admission_number) ON DELETE CASCADE -- ADDED: Foreign key constraint
       );
     `);
     console.log("Table 'visits' is ready.");
