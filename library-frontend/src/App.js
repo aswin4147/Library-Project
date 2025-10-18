@@ -4,20 +4,23 @@ import './App.css';
 import LoginPage from './LoginPage';
 import PunchPage from './PunchPage';
 import HistoryPage from './HistoryPage';
-import Header from './Header'; // Import the new Header component
+// --- 1. Import the new component ---
+import StudentDetailsPage from './StudentDetailsPage'; 
+import Header from './Header';
+import Footer from './Footer';
 
 // A wrapper component for all protected pages
 function AppLayout({ handleLogout }) {
     return (
-        <div>
+        <div className="app-layout"> 
             <Header onLogout={handleLogout} />
-            <main>
-                <Outlet /> {/* This will render the specific page component (PunchPage or HistoryPage) */}
+            <main className="main-content"> 
+                <Outlet />
             </main>
+            <Footer />
         </div>
     );
 }
-
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -57,14 +60,14 @@ function App() {
                     element={!isLoggedIn ? <LoginPage onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />} 
                 />
                 
-                {/* All protected routes will now use the AppLayout */}
                 <Route 
                     path="/" 
                     element={isLoggedIn ? <AppLayout handleLogout={handleLogout} /> : <Navigate to="/login" />}
                 >
-                    {/* These are the child routes that will be rendered inside AppLayout's <Outlet /> */}
                     <Route index element={<PunchPage />} />
                     <Route path="history" element={<HistoryPage />} />
+                    {/* --- 2. Add the new route for the student details page --- */}
+                    <Route path="students" element={<StudentDetailsPage />} />
                 </Route>
                 
                 <Route path="*" element={<Navigate to="/" />} />
@@ -74,3 +77,4 @@ function App() {
 }
 
 export default App;
+
