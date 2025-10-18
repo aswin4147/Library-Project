@@ -4,7 +4,7 @@ const mysql = require('mysql2/promise');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-const ExcelJS = require('exceljs'); // <-- ADD THIS LINE
+const ExcelJS = require('exceljs');
 
 const app = express();
 const port = 3100;
@@ -171,12 +171,7 @@ app.get('/api/history', requireLogin, async (req, res) => {
     }
 });
 
-
-// =========================================================================
-// ========================= NEW EXPORT ROUTE START ========================
-// =========================================================================
-
-// GET /api/history/export - Exports visit history as an Excel file
+// GET /api/history/export
 app.get('/api/history/export', requireLogin, async (req, res) => {
     const { year, month, day, purpose } = req.query;
 
@@ -243,10 +238,6 @@ app.get('/api/history/export', requireLogin, async (req, res) => {
         res.status(500).json({ error: "Failed to export history." });
     }
 });
-
-// =======================================================================
-// ========================= NEW EXPORT ROUTE END ========================
-// =======================================================================
 
 
 // --- Start the server ---
