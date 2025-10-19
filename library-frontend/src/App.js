@@ -8,6 +8,7 @@ import HistoryPage from './HistoryPage';
 import StudentDetailsPage from './StudentDetailsPage'; 
 import Header from './Header';
 import Footer from './Footer';
+import ProtectedRoute from './ProtectedRoute';
 
 // A wrapper component for all protected pages
 function AppLayout({ handleLogout }) {
@@ -55,21 +56,27 @@ function App() {
     return (
         <Router>
             <Routes>
-                <Route 
-                    path="/login" 
-                    element={!isLoggedIn ? <LoginPage onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />} 
+                <Route
+                    path="/login"
+                    element={!isLoggedIn ? <LoginPage onLoginSuccess={handleLoginSuccess} /> : <Navigate to="/" />}
                 />
-                
-                <Route 
-                    path="/" 
+
+                <Route
+                    path="/"
                     element={isLoggedIn ? <AppLayout handleLogout={handleLogout} /> : <Navigate to="/login" />}
                 >
                     <Route index element={<PunchPage />} />
-                    <Route path="history" element={<HistoryPage />} />
-                    {/* --- 2. Add the new route for the student details page --- */}
-                    <Route path="students" element={<StudentDetailsPage />} />
+                    {/* --- 2. Wrap sensitive routes --- */}
+                    <Route
+                        path="history"
+                        element={<ProtectedRoute element={<HistoryPage />} />}
+                    />
+                    <Route
+                        path="students"
+                        element={<ProtectedRoute element={<StudentDetailsPage />} />}
+                    />
                 </Route>
-                
+
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </Router>

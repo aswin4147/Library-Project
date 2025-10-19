@@ -33,6 +33,62 @@ body {
   line-height: 1.6;
 }
 
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  padding: 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px; /* Adjust width as needed */
+  border: 1px solid var(--gray-200);
+}
+
+.modal-content h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.modal-content p {
+  text-align: center;
+  color: var(--gray-600);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modal-actions .btn-secondary {
+  background-color: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+}
+
+.modal-actions .btn-secondary:hover {
+  background-color: var(--gray-200);
+  border-color: var(--gray-200);
+  color: var(--gray-800);
+}
+
 /* --- Layout & Structure (Footer fixed to bottom) --- */
 .app-layout {
   display: flex;

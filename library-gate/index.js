@@ -51,6 +51,38 @@ const requireLogin = (req, res, next) => {
 
 // --- API Routes (No changes in this section) ---
 
+app.post('/api/reauthenticate', requireLogin, async (req, res) => {
+    const { password } = req.body;
+    const username = req.session.username; // Get username from the active session
+
+    if (!password) {
+        return res.status(400).json({ success: false, message: 'Password is required.' });
+    }
+
+    const sql = "SELECT password FROM users WHERE username = ?";
+    try {
+        const [users] = await dbPool.query(sql, [username]);
+        if (users.length === 0) {
+            // Should not happen if session is valid, but good to check
+            return res.status(401).json({ success: false, message: 'User not found.' });
+        }
+
+        const user = users[0];
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (passwordMatch) {
+            // Password is correct
+            req.session.lastReauthTime = Date.now(); // Store re-auth timestamp in session
+            res.json({ success: true });
+        } else {
+            res.status(401).json({ success: false, message: 'Incorrect password.' });
+        }
+    } catch (err) {
+        console.error("SQL Error in /api/reauthenticate:", err);
+        res.status(500).json({ success: false, message: 'A database error occurred.' });
+    }
+});
+
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
   const sql = "SELECT * FROM users WHERE username = ?";
